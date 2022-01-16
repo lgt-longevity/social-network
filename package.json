@@ -1,0 +1,12 @@
+{
+  "name": "lgt-longevity-social-network",
+  "version": "0.1.0",
+  "scripts": {
+    "build:token": "cd ./src/token && truffle compile",
+    "build:site": "cd ./src/site && yarn run build",
+    "start:token": "cd ./src/token && truffle migrate",
+    "start:site": "cd ./src/site && yarn run start",
+    "test:token": "cd ./src/token && truffle test",
+    "test:site": "cd ./src/site && yarn run test"
+  }
+}
