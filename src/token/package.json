@@ -2,8 +2,17 @@
   "name": "lgt-longevity-social-network-token",
   "version": "0.1.0",
   "license": "MIT",
+  "scripts": {
+    "build": "truffle compile",
+    "start": "truffle migrate --reset",
+    "test": "truffle test"
+  },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2",
-    "ethereum-datetime": "^1.0.0"
+    "@openzeppelin/contracts": "^4.4.2"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^9.1.4"
   }
 }

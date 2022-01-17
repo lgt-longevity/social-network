@@ -62,6 +62,14 @@ contract Longevity is ERC721 {
     // }
 
     /* Getters */
+    function getCurrentContestId() public view returns (string memory) {
+        return currentContestId;
+    }
+
+    function getNextContestId() public view returns (string memory) {
+        return nextContestId;
+    }
+
     function getImageData(string memory imageId)
         public
         view
@@ -110,11 +118,7 @@ contract Longevity is ERC721 {
         view
         returns (string memory)
     {
-        uint16 year = dateTimeUtils.getYear(timestamp);
-        uint8 month = dateTimeUtils.getMonth(timestamp);
-        uint8 day = dateTimeUtils.getDay(timestamp);
-
-        return string(abi.encodePacked(year, "-", month, "-", day));
+        return dateTimeUtils.getDate(timestamp);
     }
 
     function getContestIdentifierByTimestamp(uint256 timestamp)
@@ -139,7 +143,10 @@ contract Longevity is ERC721 {
 
     /* Logical functions */
 
-    function startDailyContests() private {}
+    function startDailyContests() private {
+        currentContestId = "2022-01-17"; //dateTimeUtils.getDate(block.timestamp);
+        nextContestId = "2022-01-18"; //dateTimeUtils.getDate(block.timestamp, 1);
+    }
 
     function createContest() private {
         uint16 year = dateTimeUtils.getYear(block.timestamp);
@@ -166,13 +173,11 @@ contract Longevity is ERC721 {
         });
 
         contests[nextContestId][imageId] = imageUpload;
-
-        // transfer(msg.sender, 1);
     }
 
     function Vote(string memory imageId) public {
         ImageUpload memory imageUploadForCurrentContest = contests[
-            nextContestId
+            currentContestId
         ][imageId];
         ImageUpload memory imageUploadForNextContest = contests[nextContestId][
             imageId
@@ -195,19 +200,18 @@ contract Longevity is ERC721 {
                 imageUploadForNextContest.votes +
                 1;
         }
-
-        transfer(msg.sender, 1);
     }
 
     function InnapropriateVote(string memory imageId) public {
         ImageUpload memory imageUploadForCurrentContest = contests[
-            nextContestId
+            currentContestId
         ][imageId];
         ImageUpload memory imageUploadForNextContest = contests[nextContestId][
             imageId
         ];
 
         if (
+            imageUploadForCurrentContest.active &&
             imageUploadForCurrentContest.timestamp + ONE_DAY >= block.timestamp
         ) {
             imageUploadForCurrentContest.innapropriateVotes =
@@ -215,12 +219,13 @@ contract Longevity is ERC721 {
                 1;
         }
 
-        if (imageUploadForNextContest.timestamp + ONE_DAY >= block.timestamp) {
+        if (
+            imageUploadForNextContest.active &&
+            imageUploadForNextContest.timestamp + ONE_DAY >= block.timestamp
+        ) {
             imageUploadForNextContest.innapropriateVotes =
                 imageUploadForNextContest.innapropriateVotes +
                 1;
         }
-
-        transfer(msg.sender, 1);
     }
 }

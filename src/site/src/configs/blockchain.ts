@@ -476,5 +476,5 @@ export const blockchainConfig = {
       type: "function",
     },
   ],
-  address: "0x3eA7BCd0894e2b064fa4B9961A1238f500DeaFB3",
+  address: "0xCa641f35A85686f7312e58e37b600df46a6C032B",
 };

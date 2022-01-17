@@ -165,6 +165,22 @@ contract DateTime {
         return uint8((timestamp / DAY_IN_SECONDS + 4) % 7);
     }
 
+    function getDate(uint256 timestamp, uint8 addDays)
+        public
+        pure
+        returns (string memory)
+    {
+        uint16 year = getYear(timestamp);
+        uint8 month = getMonth(timestamp);
+        uint8 day = getDay(timestamp) + addDays;
+
+        return string(abi.encodePacked(year, "-", month, "-", day));
+    }
+
+    function getDate(uint256 timestamp) public pure returns (string memory) {
+        return getDate(timestamp, 0);
+    }
+
     function toTimestamp(
         uint16 year,
         uint8 month,
