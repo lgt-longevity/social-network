@@ -8,14 +8,17 @@ contract Longevity is ERC721 {
     string private currentContestId;
     string private nextContestId;
     DateTime private dateTimeUtils;
+    uint256 private available;
 
-    uint256 constant ONE_DAY = 24 * 60 * 60;
+    uint256 private constant SUPPLY = 54000000000;
+    uint256 private constant ONE_DAY = 24 * 60 * 60;
 
     struct ImageUpload {
         address wallet;
         uint256 timestamp;
         uint256 votes;
         uint256 innapropriateVotes;
+        bool active;
     }
 
     struct Winner {
@@ -28,11 +31,12 @@ contract Longevity is ERC721 {
         string date;
     }
 
-    mapping(string => ContestMetadata) public contestsMetadata;
-    mapping(string => mapping(string => ImageUpload)) public contests;
-    mapping(string => Winner) public winners;
+    mapping(string => ContestMetadata) private contestsMetadata;
+    mapping(string => mapping(string => ImageUpload)) private contests;
+    mapping(string => Winner) private winners;
 
     constructor() ERC721("Longevity", "LGT") {
+        available = SUPPLY;
         dateTimeUtils = new DateTime();
 
         startDailyContests();
@@ -58,6 +62,43 @@ contract Longevity is ERC721 {
     // }
 
     /* Getters */
+    function getImageData(string memory imageId)
+        public
+        view
+        returns (ImageUpload memory)
+    {
+        ImageUpload memory imageForCurrentContest = contests[currentContestId][
+            imageId
+        ];
+        ImageUpload memory imageForNextContest = contests[nextContestId][
+            imageId
+        ];
+
+        require(
+            imageForCurrentContest.active || imageForNextContest.active,
+            "Image doesn't exists"
+        );
+
+        if (imageForCurrentContest.active) {
+            return imageForCurrentContest;
+        } else {
+            return imageForNextContest;
+        }
+    }
+
+    function getVersion() public view returns (string memory) {
+        return "0.1.0";
+    }
+
+    function getWinnerByDate(string memory date)
+        public
+        view
+        returns (Winner memory)
+    {
+        return winners[date];
+    }
+
+    /* Utitilities */
     function convertStringDate2UIntTime(string memory date)
         private
         view
@@ -96,16 +137,6 @@ contract Longevity is ERC721 {
         return contestsMetadata[id];
     }
 
-    function getContestDateWinner(string memory date)
-        public
-        view
-        returns (Winner memory)
-    {
-        ContestMetadata memory contest = getContestIdentifierByDate(date);
-
-        return winners[contest.id];
-    }
-
     /* Logical functions */
 
     function startDailyContests() private {}
@@ -121,15 +152,22 @@ contract Longevity is ERC721 {
         );
     }
 
+    function transfer(address wallet, uint256 qtd) private {
+        payable(wallet).transfer(qtd);
+    }
+
     function UploadImage(string memory imageId) public {
         ImageUpload memory imageUpload = ImageUpload({
             wallet: msg.sender,
             timestamp: block.timestamp,
             votes: 0,
-            innapropriateVotes: 0
+            innapropriateVotes: 0,
+            active: true
         });
 
         contests[nextContestId][imageId] = imageUpload;
+
+        // transfer(msg.sender, 1);
     }
 
     function Vote(string memory imageId) public {
@@ -141,6 +179,7 @@ contract Longevity is ERC721 {
         ];
 
         if (
+            imageUploadForCurrentContest.active &&
             imageUploadForCurrentContest.timestamp + ONE_DAY >= block.timestamp
         ) {
             imageUploadForCurrentContest.votes =
@@ -148,11 +187,16 @@ contract Longevity is ERC721 {
                 1;
         }
 
-        if (imageUploadForNextContest.timestamp + ONE_DAY >= block.timestamp) {
+        if (
+            imageUploadForNextContest.active &&
+            imageUploadForNextContest.timestamp + ONE_DAY >= block.timestamp
+        ) {
             imageUploadForNextContest.votes =
                 imageUploadForNextContest.votes +
                 1;
         }
+
+        transfer(msg.sender, 1);
     }
 
     function InnapropriateVote(string memory imageId) public {
@@ -176,5 +220,7 @@ contract Longevity is ERC721 {
                 imageUploadForNextContest.innapropriateVotes +
                 1;
         }
+
+        transfer(msg.sender, 1);
     }
 }

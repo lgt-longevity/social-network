@@ -1,6 +1,7 @@
 {
   "name": "lgt-longevity-social-network-token",
   "version": "0.1.0",
+  "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.2",
     "ethereum-datetime": "^1.0.0"
