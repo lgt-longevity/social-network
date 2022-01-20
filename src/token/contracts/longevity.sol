@@ -9,9 +9,12 @@ contract Longevity is ERC721 {
     string private nextContestId;
     DateTime private dateTimeUtils;
     uint256 private available;
+    uint256 private count;
 
     uint256 private constant SUPPLY = 54000000000;
     uint256 private constant ONE_DAY = 24 * 60 * 60;
+
+    event Logger(string msg);
 
     struct ImageUpload {
         address wallet;
@@ -26,16 +29,11 @@ contract Longevity is ERC721 {
         address wallet;
     }
 
-    struct ContestMetadata {
-        string id;
-        string date;
-    }
-
-    mapping(string => ContestMetadata) private contestsMetadata;
     mapping(string => mapping(string => ImageUpload)) private contests;
     mapping(string => Winner) private winners;
 
     constructor() ERC721("Longevity", "LGT") {
+        count = 0;
         available = SUPPLY;
         dateTimeUtils = new DateTime();
 
@@ -95,7 +93,7 @@ contract Longevity is ERC721 {
     }
 
     function getVersion() public view returns (string memory) {
-        return "0.1.0";
+        return "0.1.8";
     }
 
     function getWinnerByDate(string memory date)
@@ -121,31 +119,13 @@ contract Longevity is ERC721 {
         return dateTimeUtils.getDate(timestamp);
     }
 
-    function getContestIdentifierByTimestamp(uint256 timestamp)
-        private
-        view
-        returns (ContestMetadata memory)
-    {
-        string memory id = convertUIntTime2StringDate(timestamp);
-
-        return contestsMetadata[id];
-    }
-
-    function getContestIdentifierByDate(string memory date)
-        private
-        view
-        returns (ContestMetadata memory)
-    {
-        string memory id = date;
-
-        return contestsMetadata[id];
-    }
-
     /* Logical functions */
 
     function startDailyContests() private {
-        currentContestId = "2022-01-17"; //dateTimeUtils.getDate(block.timestamp);
-        nextContestId = "2022-01-18"; //dateTimeUtils.getDate(block.timestamp, 1);
+        currentContestId = dateTimeUtils.getDate(block.timestamp);
+        nextContestId = dateTimeUtils.getDate(block.timestamp, 1);
+
+        emit Logger("startDailyContests");
     }
 
     function createContest() private {
@@ -163,7 +143,12 @@ contract Longevity is ERC721 {
         payable(wallet).transfer(qtd);
     }
 
-    function UploadImage(string memory imageId) public {
+    function contestsLength() public view returns (uint256) {
+        return count;
+    }
+
+    function UploadImage(string memory imageId) public returns (bool) {
+        emit Logger("UploadImage > start");
         ImageUpload memory imageUpload = ImageUpload({
             wallet: msg.sender,
             timestamp: block.timestamp,
@@ -173,9 +158,16 @@ contract Longevity is ERC721 {
         });
 
         contests[nextContestId][imageId] = imageUpload;
+        count++;
+
+        emit Logger("UploadImage > end");
+
+        return true;
     }
 
     function Vote(string memory imageId) public {
+        emit Logger("Vote > start");
+
         ImageUpload memory imageUploadForCurrentContest = contests[
             currentContestId
         ][imageId];
@@ -187,22 +179,26 @@ contract Longevity is ERC721 {
             imageUploadForCurrentContest.active &&
             imageUploadForCurrentContest.timestamp + ONE_DAY >= block.timestamp
         ) {
-            imageUploadForCurrentContest.votes =
-                imageUploadForCurrentContest.votes +
-                1;
+            emit Logger("Vote > current contest");
+
+            imageUploadForCurrentContest.votes++;
         }
 
         if (
             imageUploadForNextContest.active &&
             imageUploadForNextContest.timestamp + ONE_DAY >= block.timestamp
         ) {
-            imageUploadForNextContest.votes =
-                imageUploadForNextContest.votes +
-                1;
+            emit Logger("Vote > next contest");
+
+            imageUploadForNextContest.votes++;
         }
+
+        emit Logger("Vote > end");
     }
 
     function InnapropriateVote(string memory imageId) public {
+        emit Logger("InnapropriateVote > start");
+
         ImageUpload memory imageUploadForCurrentContest = contests[
             currentContestId
         ][imageId];
@@ -214,18 +210,20 @@ contract Longevity is ERC721 {
             imageUploadForCurrentContest.active &&
             imageUploadForCurrentContest.timestamp + ONE_DAY >= block.timestamp
         ) {
-            imageUploadForCurrentContest.innapropriateVotes =
-                imageUploadForCurrentContest.innapropriateVotes +
-                1;
+            emit Logger("InnapropriateVote > current contest");
+
+            imageUploadForCurrentContest.innapropriateVotes++;
         }
 
         if (
             imageUploadForNextContest.active &&
             imageUploadForNextContest.timestamp + ONE_DAY >= block.timestamp
         ) {
-            imageUploadForNextContest.innapropriateVotes =
-                imageUploadForNextContest.innapropriateVotes +
-                1;
+            emit Logger("InnapropriateVote > next contest");
+
+            imageUploadForNextContest.innapropriateVotes++;
         }
+
+        emit Logger("InnapropriateVote > end");
     }
 }

@@ -59,6 +59,19 @@ export const blockchainConfig = {
       anonymous: false,
       inputs: [
         {
+          indexed: false,
+          internalType: "string",
+          name: "msg",
+          type: "string",
+        },
+      ],
+      name: "Logger",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
           indexed: true,
           internalType: "address",
           name: "from",
@@ -344,6 +357,34 @@ export const blockchainConfig = {
       type: "function",
     },
     {
+      inputs: [],
+      name: "getCurrentContestId",
+      outputs: [
+        {
+          internalType: "string",
+          name: "",
+          type: "string",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "getNextContestId",
+      outputs: [
+        {
+          internalType: "string",
+          name: "",
+          type: "string",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
       inputs: [
         {
           internalType: "string",
@@ -437,6 +478,20 @@ export const blockchainConfig = {
       constant: true,
     },
     {
+      inputs: [],
+      name: "contestsLength",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
       inputs: [
         {
           internalType: "string",
@@ -445,7 +500,13 @@ export const blockchainConfig = {
         },
       ],
       name: "UploadImage",
-      outputs: [],
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
       stateMutability: "nonpayable",
       type: "function",
     },
@@ -476,5 +537,5 @@ export const blockchainConfig = {
       type: "function",
     },
   ],
-  address: "0xCa641f35A85686f7312e58e37b600df46a6C032B",
+  address: "0x8a6DA0193a9112aFa2AaB5517D531da6A2536fEb",
 };
