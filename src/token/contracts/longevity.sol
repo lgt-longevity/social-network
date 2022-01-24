@@ -93,7 +93,7 @@ contract Longevity is ERC721 {
     }
 
     function getVersion() public view returns (string memory) {
-        return "0.1.8";
+        return "0.2.0";
     }
 
     function getWinnerByDate(string memory date)
@@ -128,15 +128,8 @@ contract Longevity is ERC721 {
         emit Logger("startDailyContests");
     }
 
-    function createContest() private {
-        uint16 year = dateTimeUtils.getYear(block.timestamp);
-        uint8 month = dateTimeUtils.getMonth(block.timestamp);
-        uint8 day = dateTimeUtils.getDay(block.timestamp);
-
-        currentContestId = string(abi.encodePacked(year, "-", month, "-", day));
-        nextContestId = string(
-            abi.encodePacked(year, "-", month, "-", day + 1)
-        );
+    function calculateWinnerDailyContest() private {
+        emit Logger("calculateWinnerDailyContest");
     }
 
     function transfer(address wallet, uint256 qtd) private {
@@ -182,6 +175,7 @@ contract Longevity is ERC721 {
             emit Logger("Vote > current contest");
 
             imageUploadForCurrentContest.votes++;
+            contests[currentContestId][imageId] = imageUploadForCurrentContest;
         }
 
         if (
@@ -191,6 +185,8 @@ contract Longevity is ERC721 {
             emit Logger("Vote > next contest");
 
             imageUploadForNextContest.votes++;
+
+            contests[nextContestId][imageId] = imageUploadForNextContest;
         }
 
         emit Logger("Vote > end");
@@ -213,6 +209,8 @@ contract Longevity is ERC721 {
             emit Logger("InnapropriateVote > current contest");
 
             imageUploadForCurrentContest.innapropriateVotes++;
+
+            contests[currentContestId][imageId] = imageUploadForCurrentContest;
         }
 
         if (
@@ -222,6 +220,8 @@ contract Longevity is ERC721 {
             emit Logger("InnapropriateVote > next contest");
 
             imageUploadForNextContest.innapropriateVotes++;
+
+            contests[nextContestId][imageId] = imageUploadForNextContest;
         }
 
         emit Logger("InnapropriateVote > end");
